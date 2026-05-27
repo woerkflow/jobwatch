@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#111827">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <title>Jobwatch</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main class="app">
+  <h1>Jobwatch</h1>
+
+  <section class="card">
+    <p id="totalTime" class="total-time">00:00:00</p>
+  </section>
+
+  <section class="card">
+    <h2>Aufträge</h2>
+    <ul id="orderList" class="order-list"></ul>
+  </section>
+
+  <section class="card">
+    <label>
+      Auftragsnummer
+      <input id="orderNumber" type="text" inputmode="numeric" autocomplete="off">
+    </label>
+
+    <label>
+      Rückmeldenummer
+      <input id="feedbackNumber" type="text" inputmode="numeric" autocomplete="off">
+    </label>
+
+    <button id="addButton">Auftrag starten</button>
+    <button id="stopButton" class="secondary-button">
+      Aktuellen Auftrag stoppen
+    </button>
+  </section>
+
+  <section class="card">
+    <button id="clearButton" class="danger-button">
+      Alle Aufträge löschen
+    </button>
+  </section>
+</main>
+<footer class="footer">
+  <a
+          href="https://www.singular-it.de"
+          target="_blank"
+          rel="noopener noreferrer"
+  >
+    ⚡ Powered by SingularIT
+  </a>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
