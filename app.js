@@ -16,7 +16,7 @@ elements.addButton.addEventListener('click', handleAddOrder);
 elements.stopButton.addEventListener('click', handleStopCurrentOrder);
 elements.clearButton.addEventListener('click', handleClearOrders);
 
-setInterval(render, 1000);
+setInterval(render, 30000);
 render();
 
 function handleAddOrder() {
@@ -105,7 +105,7 @@ function createOrderListItem(order) {
     const li = document.createElement('li');
     li.className = 'order-item';
     li.innerHTML = `
-        <strong>Auftragsnr. ${escapeHtml(order.orderNumber)}</strong><br>
+        <strong>Auftragsnr.: ${escapeHtml(order.orderNumber)}</strong><br>
         <strong>Rückmeldenr.: ${escapeHtml(order.feedbackNumber)}</strong><br>
         Start: ${formatDateTime(order.startTime)}<br>
         Ende: ${formatEndTime(order)}<br>
@@ -131,7 +131,9 @@ function getOrderDuration(order) {
         ? new Date(order.endTime).getTime()
         : Date.now();
 
-    return Math.max(0, end - start);
+    const rawDuration = Math.max(0, end - start);
+    const fullMinutes = Math.floor(rawDuration / 60000);
+    return fullMinutes * 60000;
 }
 
 function getTotalDuration() {
@@ -141,12 +143,11 @@ function getTotalDuration() {
 }
 
 function formatDuration(milliseconds) {
-    const totalSeconds = Math.floor(milliseconds / 1000);
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
+    const totalMinutes = Math.floor(milliseconds / 60000);
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
 
-    return [hours, minutes, seconds]
+    return [hours, minutes]
         .map(value => String(value).padStart(2, '0'))
         .join(':');
 }
