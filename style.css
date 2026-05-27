@@ -24,7 +24,8 @@ html {
 body {
     min-height: 100dvh;
     margin: 0;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    display: flex;
+    justify-content: center;
     background:
             radial-gradient(circle at top, #1e3a8a 0%, var(--bg) 45%),
             var(--bg);
@@ -33,10 +34,10 @@ body {
 }
 
 .app {
+    width: 100%;
     max-width: 520px;
     min-height: 100dvh;
-    margin: 0 auto;
-    padding: 16px 16px calc(16px + env(safe-area-inset-bottom));
+    padding: 16px 16px calc(8px + env(safe-area-inset-bottom));
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -162,7 +163,7 @@ button + button {
 .footer {
     width: 100%;
     margin-top: auto;
-    padding: 12px 0 24px;
+    padding: 8px 0 0;
     text-align: center;
     font-size: 14px;
 }
