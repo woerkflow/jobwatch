@@ -19,6 +19,10 @@ elements.clearButton.addEventListener('click', handleClearOrders);
 setInterval(render, 30000);
 render();
 
+/**
+ * Starts a new order and automatically
+ * stops the currently running one.
+ */
 function handleAddOrder() {
     const orderNumber = elements.orderNumberInput.value.trim();
     const feedbackNumber = elements.feedbackNumberInput.value.trim();
@@ -64,6 +68,11 @@ function createOrder(orderNumber, feedbackNumber) {
     };
 }
 
+/**
+ * Stops the currently active order.
+ *
+ * @returns {boolean}
+ */
 function stopRunningOrder() {
     const runningOrder = getRunningOrder();
 
@@ -74,6 +83,11 @@ function stopRunningOrder() {
     return true;
 }
 
+/**
+ * Returns the currently running order.
+ *
+ * @returns {Object|undefined}
+ */
 function getRunningOrder() {
     return orders.find(order => order.endTime === null);
 }
@@ -101,30 +115,70 @@ function renderTotalTime() {
     elements.totalTime.textContent = formatDuration(getTotalDuration());
 }
 
+/**
+ * Creates a DOM element for an order entry.
+ *
+ * @param {Object} order
+ * @returns {HTMLLIElement}
+ */
 function createOrderListItem(order) {
     const li = document.createElement('li');
     li.className = 'order-item';
-    li.innerHTML = `
-        <strong>Auftragsnr.: ${escapeHtml(order.orderNumber)}</strong><br>
-        <strong>Rückmeldenr.: ${escapeHtml(order.feedbackNumber)}</strong><br>
-        Start: ${formatDateTime(order.startTime)}<br>
-        Ende: ${formatEndTime(order)}<br>
-        Dauer: ${formatDuration(getOrderDuration(order))}
-    `;
+
+    li.appendChild(createStrongLine(`Auftragsnr.: ${order.orderNumber}`));
+    li.appendChild(document.createElement('br'));
+
+    li.appendChild(createStrongLine(`Rückmeldenr.: ${order.feedbackNumber}`));
+    li.appendChild(document.createElement('br'));
+
+    li.append(`Start: ${formatDateTime(order.startTime)}`);
+    li.appendChild(document.createElement('br'));
+
+    li.append('Ende: ');
+
+    if (order.endTime) {
+        li.append(formatDateTime(order.endTime));
+    } else {
+        const runningBadge = document.createElement('span');
+        runningBadge.className = 'running';
+        runningBadge.textContent = 'läuft';
+
+        li.appendChild(runningBadge);
+    }
+
+    li.appendChild(document.createElement('br'));
+
+    li.append(
+        `Dauer: ${formatDuration(getOrderDuration(order))}`
+    );
+
     return li;
 }
 
-function formatEndTime(order) {
-    if (!order.endTime) {
-        return '<span class="running">läuft</span>';
-    }
-    return formatDateTime(order.endTime);
+/**
+ * Creates a strong text element.
+ *
+ * @param {string} text
+ * @returns {HTMLElement}
+ */
+function createStrongLine(text) {
+    const strong = document.createElement('strong');
+    strong.textContent = text;
+
+    return strong;
 }
 
 function getOrdersNewestFirst() {
     return [...orders].reverse();
 }
 
+/**
+ * Calculates the billable duration of an order.
+ * Duration is rounded down to full minutes.
+ *
+ * @param {Object} order
+ * @returns {number}
+ */
 function getOrderDuration(order) {
     const start = new Date(order.startTime).getTime();
     const end = order.endTime
@@ -136,12 +190,23 @@ function getOrderDuration(order) {
     return fullMinutes * 60000;
 }
 
+/**
+ * Calculates the total tracked duration.
+ *
+ * @returns {number}
+ */
 function getTotalDuration() {
     return orders.reduce((sum, order) => {
         return sum + getOrderDuration(order);
     }, 0);
 }
 
+/**
+ * Formats milliseconds as HH:MM.
+ *
+ * @param {number} milliseconds
+ * @returns {string}
+ */
 function formatDuration(milliseconds) {
     const totalMinutes = Math.floor(milliseconds / 60000);
     const hours = Math.floor(totalMinutes / 60);
@@ -159,10 +224,18 @@ function formatDateTime(value) {
     });
 }
 
+/**
+ * Persists all orders in local storage.
+ */
 function saveOrders() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(orders));
 }
 
+/**
+ * Loads saved orders from local storage.
+ *
+ * @returns {Array}
+ */
 function loadOrders() {
     const rawOrders = localStorage.getItem(STORAGE_KEY);
 
@@ -174,15 +247,6 @@ function loadOrders() {
     } catch {
         return [];
     }
-}
-
-function escapeHtml(value) {
-    return value
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll("'", '&#039;');
 }
 
 if ('serviceWorker' in navigator) {
