@@ -30,7 +30,7 @@ No frameworks, no backend, no dependencies.
 Clone the repository:
 
 ```bash
-git clone https://github.com/your-name/your-repo.git
+git clone https://github.com/woerkflow/jobwatch.git
 ```
 
 Open the project folder and start a local web server.
