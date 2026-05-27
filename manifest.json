@@ -1,6 +1,6 @@
 {
   "name": "Jobwatch",
-  "short_name": "Watch",
+  "short_name": "Jobwatch",
   "description": "Timer-App für aufeinanderfolgende Aufträge.",
   "start_url": "./",
   "scope": "./",
