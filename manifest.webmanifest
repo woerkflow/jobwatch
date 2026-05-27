@@ -1,6 +1,6 @@
 {
-  "name": "Auftrags-Timer",
-  "short_name": "Timer",
+  "name": "Jobwatch",
+  "short_name": "Watch",
   "description": "Timer-App für aufeinanderfolgende Aufträge.",
   "start_url": "./",
   "scope": "./",
