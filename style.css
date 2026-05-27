@@ -88,7 +88,8 @@ input {
     padding: 12px 14px;
     margin-top: 6px;
     font-size: 18px;
-    border: 1px solid #cbd5e1;
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
     border-radius: 12px;
 }
 
