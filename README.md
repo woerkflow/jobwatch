@@ -1,4 +1,4 @@
-# Auftrag Timer
+# Jobwatch
 
 A lightweight Progressive Web App (PWA) for tracking sequential work orders on smartphones and desktop devices.
 
