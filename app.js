@@ -16,6 +16,14 @@ elements.addButton.addEventListener('click', handleAddOrder);
 elements.stopButton.addEventListener('click', handleStopCurrentOrder);
 elements.clearButton.addEventListener('click', handleClearOrders);
 
+const MINUTE = 60000;
+const BILLING_INTERVAL_MINUTES = 5;
+
+const BREAK_WINDOWS = [
+    { start: '09:00', end: '09:15' },
+    { start: '11:30', end: '11:45' },
+];
+
 setInterval(render, 30000);
 render();
 
@@ -124,16 +132,12 @@ function renderTotalTime() {
 function createOrderListItem(order) {
     const li = document.createElement('li');
     li.className = 'order-item';
-
     li.appendChild(createStrongLine(`Auftragsnr.: ${order.orderNumber}`));
     li.appendChild(document.createElement('br'));
-
     li.appendChild(createStrongLine(`Rückmeldenr.: ${order.feedbackNumber}`));
     li.appendChild(document.createElement('br'));
-
     li.append(`Start: ${formatDateTime(order.startTime)}`);
     li.appendChild(document.createElement('br'));
-
     li.append('Ende: ');
 
     if (order.endTime) {
@@ -145,13 +149,10 @@ function createOrderListItem(order) {
 
         li.appendChild(runningBadge);
     }
-
     li.appendChild(document.createElement('br'));
-
     li.append(
         `Dauer: ${formatDuration(getOrderDuration(order))}`
     );
-
     return li;
 }
 
@@ -164,7 +165,6 @@ function createOrderListItem(order) {
 function createStrongLine(text) {
     const strong = document.createElement('strong');
     strong.textContent = text;
-
     return strong;
 }
 
@@ -174,20 +174,93 @@ function getOrdersNewestFirst() {
 
 /**
  * Calculates the billable duration of an order.
- * Duration is rounded down to full minutes.
+ * Break windows are subtracted first.
+ * Finished orders are rounded up to the next 5-minute interval.
  *
  * @param {Object} order
  * @returns {number}
  */
 function getOrderDuration(order) {
-    const start = new Date(order.startTime).getTime();
+    const start = getEffectiveStartTime(order);
     const end = order.endTime
-        ? new Date(order.endTime).getTime()
-        : Date.now();
+        ? new Date(order.endTime)
+        : new Date();
+    const netDuration = getNetDuration(start, end);
 
-    const rawDuration = Math.max(0, end - start);
-    const fullMinutes = Math.floor(rawDuration / 60000);
-    return fullMinutes * 60000;
+    if (!order.endTime) {
+        return roundDownToFullMinutes(netDuration);
+    }
+    return roundUpToBillingInterval(netDuration);
+}
+
+function getEffectiveStartTime(order) {
+    const start = new Date(order.startTime);
+    const offset = getCarryOverOffset(order);
+    return new Date(start.getTime() + offset);
+}
+
+function getCarryOverOffset(order) {
+    const orderIndex = orders.findIndex(currentOrder => currentOrder.id === order.id);
+
+    if (orderIndex <= 0) {
+        return 0;
+    }
+    return orders
+        .slice(0, orderIndex)
+        .reduce((sum, previousOrder) => {
+            return sum + getRoundingDifference(previousOrder);
+        }, 0);
+}
+
+function getRoundingDifference(order) {
+    if (!order.endTime) {
+        return 0;
+    }
+    const start = getEffectiveStartTime(order);
+    const end = new Date(order.endTime);
+    const netDuration = getNetDuration(start, end);
+    const roundedDuration = roundUpToBillingInterval(netDuration);
+    return Math.max(0, roundedDuration - netDuration);
+}
+
+function getNetDuration(start, end) {
+    const rawDuration = Math.max(0, end.getTime() - start.getTime());
+    const breakDuration = getOverlappingBreakDuration(start, end);
+    return Math.max(0, rawDuration - breakDuration);
+}
+
+function getOverlappingBreakDuration(start, end) {
+    return BREAK_WINDOWS.reduce((sum, breakWindow) => {
+        return sum + getBreakOverlap(start, end, breakWindow);
+    }, 0);
+}
+
+function getBreakOverlap(start, end, breakWindow) {
+    const breakStart = createDateWithTime(start, breakWindow.start);
+    const breakEnd = createDateWithTime(start, breakWindow.end);
+    const overlapStart = Math.max(start.getTime(), breakStart.getTime());
+    const overlapEnd = Math.min(end.getTime(), breakEnd.getTime());
+    return Math.max(0, overlapEnd - overlapStart);
+}
+
+function createDateWithTime(baseDate, time) {
+    const [hours, minutes] = time.split(':').map(Number);
+    const date = new Date(baseDate);
+    date.setHours(hours, minutes, 0, 0);
+    return date;
+}
+
+function roundDownToFullMinutes(milliseconds) {
+    return Math.floor(milliseconds / MINUTE) * MINUTE;
+}
+
+function roundUpToBillingInterval(milliseconds) {
+    const interval = BILLING_INTERVAL_MINUTES * MINUTE;
+
+    if (milliseconds === 0) {
+        return 0;
+    }
+    return Math.ceil(milliseconds / interval) * interval;
 }
 
 /**
