@@ -112,11 +112,17 @@ function render() {
 }
 
 function renderOrders() {
-    elements.orderList.innerHTML = '';
+    clearElement(elements.orderList);
 
     getOrdersNewestFirst().forEach(order => {
         elements.orderList.appendChild(createOrderListItem(order));
     });
+}
+
+function clearElement(element) {
+    while (element.firstChild) {
+        element.removeChild(element.firstChild);
+    }
 }
 
 function renderTotalTime() {
@@ -150,9 +156,7 @@ function createOrderListItem(order) {
         li.appendChild(runningBadge);
     }
     li.appendChild(document.createElement('br'));
-    li.append(
-        `Dauer: ${formatDuration(getOrderDuration(order))}`
-    );
+    li.append(`Dauer: ${formatDuration(getOrderDuration(order))}`);
     return li;
 }
 
@@ -212,6 +216,10 @@ function getCarryOverOffset(order) {
         }, 0);
 }
 
+/**
+ * Returns the accumulated rounding difference of all previous orders.
+ * This shifts the effective start time of following orders forward.
+ */
 function getRoundingDifference(order) {
     if (!order.endTime) {
         return 0;
@@ -275,19 +283,14 @@ function getTotalDuration() {
 }
 
 /**
- * Formats milliseconds as HH:MM.
+ * Formats milliseconds as billable minutes.
  *
  * @param {number} milliseconds
  * @returns {string}
  */
 function formatDuration(milliseconds) {
-    const totalMinutes = Math.floor(milliseconds / 60000);
-    const hours = Math.floor(totalMinutes / 60);
-    const minutes = totalMinutes % 60;
-
-    return [hours, minutes]
-        .map(value => String(value).padStart(2, '0'))
-        .join(':');
+    const totalMinutes = Math.floor(milliseconds / MINUTE);
+    return `${totalMinutes} min`;
 }
 
 function formatDateTime(value) {

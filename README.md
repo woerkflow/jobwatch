@@ -2,18 +2,51 @@
 
 A lightweight Progressive Web App (PWA) for tracking sequential work orders on smartphones and desktop devices.
 
-The app automatically stops the currently running order when a new one is started and calculates the total tracked time.
+The app automatically stops the currently running order when a new one is started, subtracts defined break windows from tracked time and rounds finished orders up to the next billing interval.
 
 ## Features
 
 - Start and stop work orders
 - Automatic switching between running orders
-- Total time calculation
+- Automatic break deduction
+- Configurable break windows
+- Automatic 5-minute billing rounding
+- Carry-over rounding compensation between orders
+- Total tracked time calculation
 - Persistent local storage
 - Offline support
 - Installable as a PWA
 - Mobile-first UI
 - Android and iOS compatible
+
+## Billing Logic
+
+Tracked durations are calculated as:
+
+```txt
+(end time - start time) - overlapping break windows
+```
+
+Finished orders are automatically rounded up to the next 5-minute interval.
+
+### Example:
+
+```txt
+Actual duration:     63 min
+Rounded duration:    65 min
+Carry-over offset:    2 min
+```
+
+The rounding difference is transferred internally to the following order to prevent artificial inflation of total working time.
+
+## Default Break Windows
+
+```txt
+09:00 - 09:15
+11:30 - 11:45
+```
+
+Break windows can be configured directly inside app.js.
 
 ## Tech Stack
 
@@ -111,6 +144,8 @@ No user accounts, cloud services or external databases are required.
 - Statistics dashboard
 - Dark/light themes
 - Import/export backups
+- Custom billing intervals
+- Configurable break windows
 
 ## License
 

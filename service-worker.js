@@ -1,4 +1,4 @@
-const CACHE_NAME = 'job-watch-v1';
+const CACHE_NAME = 'job-watch-v2';
 
 const FILES_TO_CACHE = [
     './',
